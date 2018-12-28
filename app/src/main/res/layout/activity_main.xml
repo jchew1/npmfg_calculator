@@ -20,16 +20,18 @@
                 android:id="@+id/top_num"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="84sp"
-                android:text="@string/zero"
-                android:gravity="right"/>
+                android:textSize="@dimen/num_text_size"
+                android:text="0"
+                android:gravity="right"
+                android:maxLines="1"/>
             <TextView
                 android:id="@+id/bottom_num"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="84sp"
+                android:textSize="@dimen/num_text_size"
                 android:text="@string/zero"
-                android:gravity="right"/>
+                android:gravity="right"
+                android:maxLines="1"/>
         </LinearLayout>
 
         <LinearLayout
@@ -43,16 +45,18 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/inches"
-                android:textSize="36sp"
-                android:gravity="bottom|left"/>
+                android:textSize="28sp"
+                android:gravity="bottom|left"
+                android:maxLines="1"/>
             <TextView
                 android:id="@+id/unit_2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/centimeters"
+                android:text="@string/millimeters"
                 android:textSize="36sp"
-                android:gravity="bottom|left"/>
+                android:gravity="bottom|left"
+                android:maxLines="1"/>
         </LinearLayout>
 
     </LinearLayout>
@@ -144,7 +148,7 @@
             android:layout_column="3"/>
         <Button
             android:id="@+id/unit2_button"
-            android:text="@string/centimeters"
+            android:text="@string/millimeters"
             android:onClick="switchUnit"
             android:layout_row="2"
             android:layout_column="3"

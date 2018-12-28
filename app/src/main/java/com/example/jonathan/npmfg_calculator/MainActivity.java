@@ -2,9 +2,12 @@ package com.example.jonathan.npmfg_calculator;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+
+import java.text.DecimalFormat;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -12,6 +15,7 @@ public class MainActivity extends AppCompatActivity {
     TextView topNum;
     TextView bottomNum;
     boolean containsDot = false;
+    DecimalFormat df = new DecimalFormat("#.####");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,6 +23,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         topNum = findViewById(R.id.top_num);
         bottomNum = findViewById(R.id.bottom_num);
+        Log.d(TAG, "oncreateabc");
+        metricsSetup();
+    }
+
+    private void metricsSetup(){
+        DisplayMetrics displayMetrics= new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int width = displayMetrics.widthPixels;
+        Log.d(TAG, "metricssetup " + String.valueOf(width));
     }
 
     public void putNumber(View view) {
@@ -41,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void clearNum(View view) {
+        topNum.setText("0");
         bottomNum.setText("0");
         containsDot = false;
     }
@@ -51,22 +65,22 @@ public class MainActivity extends AppCompatActivity {
         String unit2 = unit2View.getText().toString();
         String num1 = bottomNum.getText().toString();
         String newNum = topNum.getText().toString();
-        switch(unit1){
+        switch(unit2){
             case "in":
-                if(unit2.equals("cm")){
-                    newNum = String.valueOf(inToCm(Double.valueOf(num1), false));
+                if(unit1.equals("mm")){
+                    newNum = String.valueOf(df.format(inToMm(Double.valueOf(num1), false)));
                 }
                 break;
             case "mm":
-                if(unit2.equals("in")){
-                    newNum = String.valueOf(inToCm(Double.valueOf(num1), true));
+                if(unit1.equals("in")){
+                    newNum = String.valueOf(df.format(inToMm(Double.valueOf(num1), true)));
                 }
         }
         topNum.setText(newNum);
     }
 
-    private double inToCm(double num1, boolean reverse){
-        return reverse ? num1/2.54 : num1*2.54;
+    private double inToMm(double num1, boolean reverse){
+        return reverse ? num1/25.4 : num1*25.4;
     }
 
     public void switchUnit(View view) {

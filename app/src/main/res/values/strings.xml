@@ -13,7 +13,8 @@
     <string name="plus">+</string>
     <string name="dot">.</string>
     <string name="button_text_size">36sp</string>
+    <string name="num_text_size">24sp</string>
     <string name="clear">C</string>
     <string name="inches">in</string>
-    <string name="centimeters">cm</string>
+    <string name="millimeters">mm</string>
 </resources>
