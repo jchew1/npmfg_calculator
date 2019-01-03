@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.GridLayout;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
@@ -12,6 +14,9 @@ import java.text.DecimalFormat;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "ABC";
+    private static final int numButtonsX = 4;
+    private static final int numButtonsY = 4;
+    private static final String[] BUTTON_LABELS = new String[]{"7", "8", "9", "in", "4", "5", "6", "", "1", "2", "3", "mm", "0", ",", "C", ""};
     TextView topNum;
     TextView bottomNum;
     boolean containsDot = false;
@@ -30,8 +35,38 @@ public class MainActivity extends AppCompatActivity {
     private void metricsSetup(){
         DisplayMetrics displayMetrics= new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int width = displayMetrics.widthPixels;
-        Log.d(TAG, "metricssetup " + String.valueOf(width));
+        int width = displayMetrics.widthPixels/4;
+        GridLayout grid = findViewById(R.id.buttons);
+        Log.d(TAG, String.valueOf(grid.getUseDefaultMargins()));
+        Button v = null;
+        for(int i=0; i<grid.getChildCount(); i++){
+            v = (Button)grid.getChildAt(i);
+            v.setWidth(width);
+            GridLayout.LayoutParams params = (GridLayout.LayoutParams) v.getLayoutParams();
+            params.bottomMargin = params.topMargin = params.leftMargin = params.rightMargin = 0;
+            v.setLayoutParams(params);
+            Log.d(TAG, "leftmargin: " + ((GridLayout.LayoutParams) v.getLayoutParams()).leftMargin);
+        }
+//        Log.d(TAG, "metricssetup " + String.valueOf(width));
+////        <Button
+////        android:id="@+id/button0"
+////        android:text="@string/zero"
+////        android:onClick="putNumber"
+////        android:layout_row="3"
+////        android:layout_column="0"/>
+//        for(int i=0; i<numButtonsY; i++){
+//            for(int j=0; j<numButtonsX; j++){
+//                Log.d(TAG, "metricssetup: " + BUTTON_LABELS[i*numButtonsX + j]);
+//                Button b = new Button(this);
+//                GridLayout.LayoutParams params = new GridLayout.LayoutParams(GridLayout.spec(j), GridLayout.spec(i));
+//                params.bottomMargin = params.topMargin = params.leftMargin = params.rightMargin = 0;
+//                b.setId(this.getResources().getIdentifier("button"+BUTTON_LABELS[i*numButtonsX + j], "string", this.getPackageName()));
+//                b.setLayoutParams(params);
+//                b.setWidth(width);
+//                b.setText(BUTTON_LABELS[i*numButtonsX + j]);
+//                grid.addView(b);
+//            }
+//        }
     }
 
     public void putNumber(View view) {
