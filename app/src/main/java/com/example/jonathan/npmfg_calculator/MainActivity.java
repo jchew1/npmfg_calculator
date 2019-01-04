@@ -48,6 +48,14 @@ public class MainActivity extends AppCompatActivity {
         unit1Button.setText(units[unit1Index]);
         unit2Button.setText(units[unit2Index]);
 
+        Log.d(TAG, "density: " + getResources().getDisplayMetrics().density);
+        Log.d(TAG, String.valueOf(topNumView.getTextSize()));
+        Log.d(TAG, String.valueOf(bottomNumView.getTextSize()));
+        Log.d(TAG, String.valueOf(unit1View.getTextSize()));
+        Log.d(TAG, String.valueOf(unit2View.getTextSize()));
+        Log.d(TAG, String.valueOf(unit1Button.getTextSize()));
+        Log.d(TAG, String.valueOf(unit2Button.getTextSize()));
+
         if(savedInstanceState != null){
             topNumView.setText(savedInstanceState.getString("topNumViewText"));
             bottomNumView.setText(savedInstanceState.getString("bottomNumViewText"));
@@ -238,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
                 result = num*10;
                 break;
             case "ft":
-                result = num*30.48;
+                result = num/30.48;
                 break;
         }
         return String.valueOf(df.format(result));
@@ -250,12 +258,13 @@ public class MainActivity extends AppCompatActivity {
             case "in":
                 result = num*12;
                 break;
-                case "mm"
+            case "mm":
+                result = num*304.8;
+                break;
+            case "cm":
+                result = num*30.48;
         }
+        return String.valueOf(df.format(result));
     }
-
-    private double cmToIn(double num) {return num/2.54;}
-    private double cmToMm(double num) {return num*10;}
-    private double cmToFt(double num) {return num*30.48;}
 
 }
