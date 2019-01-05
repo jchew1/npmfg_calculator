@@ -12,6 +12,7 @@
         android:orientation="horizontal">
 
         <LinearLayout
+            android:id="@+id/numbers"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -20,21 +21,28 @@
                 android:id="@+id/top_num"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="36sp"
                 android:textSize="@dimen/num_text_size"
                 android:text="0"
                 android:gravity="right"
-                android:maxLines="1"/>
+                android:maxLines="1"
+                android:background="#ff00ff"/>
             <TextView
                 android:id="@+id/bottom_num"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="36sp"
                 android:textSize="@dimen/num_text_size"
                 android:text="@string/zero"
                 android:gravity="right"
-                android:maxLines="1"/>
+                android:maxLines="1"
+                android:background="#ffff00"/>
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/units"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -46,7 +54,8 @@
                 android:layout_weight="1"
                 android:textSize="36sp"
                 android:gravity="bottom|left"
-                android:maxLines="1"/>
+                android:maxLines="1"
+                android:background="#00ff00"/>
             <TextView
                 android:id="@+id/unit_2"
                 android:layout_width="match_parent"
@@ -54,7 +63,8 @@
                 android:layout_weight="1"
                 android:textSize="36sp"
                 android:gravity="bottom|left"
-                android:maxLines="1"/>
+                android:maxLines="1"
+                android:background="#00ffff"/>
         </LinearLayout>
 
     </LinearLayout>

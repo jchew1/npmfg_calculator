@@ -1,6 +1,7 @@
 package com.example.jonathan.npmfg_calculator;
 
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.GridLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
@@ -20,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "ABC";
     private static final int numButtonsX = 4;
     private static final int numButtonsY = 5;
+    private static final float gridHeightPerc = 0.5f;
     private static final String[] units = new String[]{"in", "mm", "cm", "ft"};
     TextView topNumView;
     TextView bottomNumView;
@@ -94,6 +97,16 @@ public class MainActivity extends AppCompatActivity {
         DisplayMetrics displayMetrics= new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels/numButtonsX;
+        int height = displayMetrics.heightPixels - getStatusBarHeight();
+        int numberHeight = (int)(height*(1-gridHeightPerc)/2);
+        int buttonHeight = (int)(height*gridHeightPerc/numButtonsY);
+
+        LinearLayout.LayoutParams numParams = (LinearLayout.LayoutParams) topNumView.getLayoutParams();
+        numParams.height = numberHeight;
+        topNumView.setLayoutParams(numParams);
+        bottomNumView.setLayoutParams(numParams);
+        LinearLayout units = findViewById(R.id.units);
+
 
         GridLayout grid = findViewById(R.id.buttons);
         Button v;
@@ -102,8 +115,18 @@ public class MainActivity extends AppCompatActivity {
             GridLayout.LayoutParams params = (GridLayout.LayoutParams) v.getLayoutParams();
             params.bottomMargin = params.topMargin = params.leftMargin = params.rightMargin = 0;
             params.width = width;
+            params.height = buttonHeight;
             v.setLayoutParams(params);
         }
+    }
+
+    private int getStatusBarHeight(){
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if(resourceId > 0){
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 
     public void putNumber(View view) {
@@ -115,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
             currentNum += num;
             bottomNumView.setText(currentNum);
         }
+        Log.d(TAG, currentNum);
         convertNum();
     }
 
@@ -178,6 +202,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case "mm":
                 newNum = convertMm(Double.valueOf(temp), unit1);
+                break;
+            case "cm":
+                newNum = convertCm(Double.valueOf(temp), unit1);
+                break;
+            case "ft":
+                newNum = convertFt(Double.valueOf(temp), unit1);
                 break;
         }
         topNumView.setText(newNum);
