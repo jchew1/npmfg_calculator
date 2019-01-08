@@ -16,16 +16,20 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "ABC";
+    private static final int maxNumLength = 10;
     private static final int numButtonsX = 4;
     private static final int numButtonsY = 5;
     private static final float gridHeightPerc = 0.5f;
     private static final String[] units = new String[]{"in", "mm", "cm", "ft"};
     TextView topNumView;
+    TextView middleNumView;
     TextView bottomNumView;
+    TextView operatorView;
     TextView unit1View;
     TextView unit2View;
     Button unit1Button;
@@ -41,7 +45,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         topNumView = findViewById(R.id.top_num);
+        middleNumView = findViewById(R.id.middle_num);
         bottomNumView = findViewById(R.id.bottom_num);
+        operatorView = findViewById(R.id.operator);
         unit1View = findViewById(R.id.unit_1);
         unit2View = findViewById(R.id.unit_2);
         unit1View.setText(units[unit1Index]);
@@ -50,14 +56,6 @@ public class MainActivity extends AppCompatActivity {
         unit2Button = findViewById(R.id.button_unit2);
         unit1Button.setText(units[unit1Index]);
         unit2Button.setText(units[unit2Index]);
-
-        Log.d(TAG, "density: " + getResources().getDisplayMetrics().density);
-        Log.d(TAG, String.valueOf(topNumView.getTextSize()));
-        Log.d(TAG, String.valueOf(bottomNumView.getTextSize()));
-        Log.d(TAG, String.valueOf(unit1View.getTextSize()));
-        Log.d(TAG, String.valueOf(unit2View.getTextSize()));
-        Log.d(TAG, String.valueOf(unit1Button.getTextSize()));
-        Log.d(TAG, String.valueOf(unit2Button.getTextSize()));
 
         if(savedInstanceState != null){
             topNumView.setText(savedInstanceState.getString("topNumViewText"));
@@ -101,12 +99,8 @@ public class MainActivity extends AppCompatActivity {
         int numberHeight = (int)(height*(1-gridHeightPerc)/2);
         int buttonHeight = (int)(height*gridHeightPerc/numButtonsY);
 
-        LinearLayout.LayoutParams numParams = (LinearLayout.LayoutParams) topNumView.getLayoutParams();
-        numParams.height = numberHeight;
-        topNumView.setLayoutParams(numParams);
-        bottomNumView.setLayoutParams(numParams);
-        LinearLayout units = findViewById(R.id.units);
-
+        topNumView.getLayoutParams().height = middleNumView.getLayoutParams().height = operatorView.getLayoutParams().height = numberHeight/2;
+        bottomNumView.getLayoutParams().height = numberHeight;
 
         GridLayout grid = findViewById(R.id.buttons);
         Button v;
@@ -131,44 +125,57 @@ public class MainActivity extends AppCompatActivity {
 
     public void putNumber(View view) {
         String num = ((TextView)view).getText().toString();
-        String currentNum = bottomNumView.getText().toString();
+        String currentNum = middleNumView.getText().toString();
+
+        int numLength = currentNum.length() - (hasDot ? 1 : 0);
+        if(numLength >= maxNumLength){
+            return;
+        }
+
         if(currentNum.equals("0")){
-            bottomNumView.setText(num);
+            middleNumView.setText(num);
         }else{
             currentNum += num;
-            bottomNumView.setText(currentNum);
+            middleNumView.setText(currentNum);
         }
-        Log.d(TAG, currentNum);
+        Log.d(TAG, "putNumber: " + currentNum);
         convertNum();
     }
 
     public void putDot(View view) {
         if(!hasDot){
-            String currentNum = bottomNumView.getText().toString() + ".";
-            bottomNumView.setText(currentNum);
+            String currentNum = topNumView.getText().toString() + ".";
+            if(currentNum.length() - 1 >= maxNumLength) return;
+            topNumView.setText(currentNum);
             hasDot = true;
         }
     }
 
     public void putOperator(View view){
-        String currentNum = bottomNumView.getText().toString();
         if(hasOperator == '\u0000') {
-            currentNum += ((Button)view).getText().toString();
-            bottomNumView.setText(currentNum);
-            hasOperator = currentNum.charAt(currentNum.length()-1);
+            String op = ((Button)view).getText().toString();
+            operatorView.setText(op);
+            hasOperator = op.charAt(0);
+            topNumView.setText(middleNumView.getText());
+            middleNumView.setText("0");
+            Log.d(TAG, "hasOperator: " + String.valueOf(hasOperator));
         }
     }
 
     public void equals(View view){
         if(hasOperator != '\u0000'){
-            bottomNumView.setText(simplifyNum(bottomNumView.getText().toString()));
+            middleNumView.setText(simplifyNum());
+            topNumView.setText("");
+            operatorView.setText("");
             hasOperator = '\u0000';
         }
     }
 
     public void clearNum(View view) {
-        topNumView.setText("0");
+        topNumView.setText("");
+        middleNumView.setText("0");
         bottomNumView.setText("0");
+        operatorView.setText("");
         hasDot = false;
         hasOperator = '\u0000';
     }
@@ -192,46 +199,52 @@ public class MainActivity extends AppCompatActivity {
     private void convertNum() {
         String unit1 = unit1View.getText().toString();
         String unit2 = unit2View.getText().toString();
-        String num1 = bottomNumView.getText().toString();
-        String newNum = topNumView.getText().toString();
-        String temp = hasOperator == '\u0000' ? num1 : simplifyNum(num1);
+        String newNum = bottomNumView.getText().toString();
+        String temp = hasOperator == '\u0000' ? middleNumView.getText().toString() : simplifyNum();
 
-        switch(unit2){
+        switch(unit1){
             case "in":
-                newNum = convertIn(Double.valueOf(temp), unit1);
+                newNum = convertIn(Double.valueOf(temp), unit2);
                 break;
             case "mm":
-                newNum = convertMm(Double.valueOf(temp), unit1);
+                newNum = convertMm(Double.valueOf(temp), unit2);
                 break;
             case "cm":
-                newNum = convertCm(Double.valueOf(temp), unit1);
+                newNum = convertCm(Double.valueOf(temp), unit2);
                 break;
             case "ft":
-                newNum = convertFt(Double.valueOf(temp), unit1);
+                newNum = convertFt(Double.valueOf(temp), unit2);
                 break;
         }
-        topNumView.setText(newNum);
+        bottomNumView.setText(newNum);
+        Log.d(TAG, "convertNum: " + bottomNumView.getText().toString());
     }
 
-    private String simplifyNum(String expr){
-        String[] nums = expr.split(String.valueOf(hasOperator));
+    private String simplifyNum(){
+        String topNum = topNumView.getText().toString();
+        String middleNum = middleNumView.getText().toString();
         Double result = 0.0;
 
         switch(hasOperator){
             case '+':
-                result = Double.parseDouble(nums[0]) + Double.parseDouble(nums[1]);
+                result = Double.parseDouble(topNum) + Double.parseDouble(middleNum);
                 break;
             case '-':
-                result = Double.parseDouble(nums[0]) - Double.parseDouble(nums[1]);
+                result = Double.parseDouble(topNum) - Double.parseDouble(middleNum);
                 break;
             case 'x':
-                result = Double.parseDouble(nums[0]) * Double.parseDouble(nums[1]);
+                result = Double.parseDouble(topNum) * Double.parseDouble(middleNum);
                 break;
             case '/':
-                result = Double.parseDouble(nums[0]) / Double.parseDouble(nums[1]);
+                result = Double.parseDouble(topNum) / Double.parseDouble(middleNum);
                 break;
         }
+        Log.d(TAG, String.valueOf(result));
         return String.valueOf(result);
+    }
+
+    private String fitNumber(String num){
+        return num;
     }
 
     private String convertIn(double num, String unit){
