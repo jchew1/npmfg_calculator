@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     int unit2Index = 1;
     boolean hasDot = false;
     char hasOperator;
-    DecimalFormat df = new DecimalFormat("#.####");
+    DecimalFormat df = new DecimalFormat("#.####E0");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,9 +59,11 @@ public class MainActivity extends AppCompatActivity {
 
         if(savedInstanceState != null){
             topNumView.setText(savedInstanceState.getString("topNumViewText"));
+            middleNumView.setText(savedInstanceState.getString("middleNumViewText"));
             bottomNumView.setText(savedInstanceState.getString("bottomNumViewText"));
             hasDot =  savedInstanceState.getBoolean("hasDot");
             hasOperator = savedInstanceState.getChar("hasOperator");
+            operatorView.setText(String.valueOf(hasOperator));
             unit1Index = savedInstanceState.getInt("unit1Index");
             unit2Index = savedInstanceState.getInt("unit2Index");
             unit1View.setText(units[unit1Index]);
@@ -84,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString("topNumViewText", topNumView.getText().toString());
+        outState.putString("middleNumViewText", middleNumView.getText().toString());
         outState.putString("bottomNumViewText", bottomNumView.getText().toString());
         outState.putBoolean("hasDot", hasDot);
         outState.putChar("hasOperator", hasOperator);
@@ -164,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void equals(View view){
         if(hasOperator != '\u0000'){
-            middleNumView.setText(simplifyNum());
+            middleNumView.setText(String.valueOf(simplifyNum()));
             topNumView.setText("");
             operatorView.setText("");
             hasOperator = '\u0000';
@@ -199,8 +202,8 @@ public class MainActivity extends AppCompatActivity {
     private void convertNum() {
         String unit1 = unit1View.getText().toString();
         String unit2 = unit2View.getText().toString();
-        String newNum = bottomNumView.getText().toString();
-        String temp = hasOperator == '\u0000' ? middleNumView.getText().toString() : simplifyNum();
+        Double newNum = Double.valueOf(bottomNumView.getText().toString());
+        Double temp = (hasOperator == '\u0000') ? Double.valueOf(middleNumView.getText().toString()) : simplifyNum();
 
         switch(unit1){
             case "in":
@@ -216,11 +219,11 @@ public class MainActivity extends AppCompatActivity {
                 newNum = convertFt(Double.valueOf(temp), unit2);
                 break;
         }
-        bottomNumView.setText(newNum);
+        bottomNumView.setText(String.valueOf(newNum));
         Log.d(TAG, "convertNum: " + bottomNumView.getText().toString());
     }
 
-    private String simplifyNum(){
+    private Double simplifyNum(){
         String topNum = topNumView.getText().toString();
         String middleNum = middleNumView.getText().toString();
         Double result = 0.0;
@@ -240,14 +243,15 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         Log.d(TAG, String.valueOf(result));
-        return String.valueOf(result);
+        return result;
     }
 
     private String fitNumber(String num){
+
         return num;
     }
 
-    private String convertIn(double num, String unit){
+    private Double convertIn(double num, String unit){
         Double result = num;
         switch(unit){
             case "mm":
@@ -260,10 +264,10 @@ public class MainActivity extends AppCompatActivity {
                 result = num/12;
                 break;
         }
-        return String.valueOf(df.format(result));
+        return result;
     }
 
-    private String convertMm(double num, String unit){
+    private Double convertMm(double num, String unit){
         Double result = num;
         switch(unit){
             case "in":
@@ -276,10 +280,10 @@ public class MainActivity extends AppCompatActivity {
                 result = num/304.8;
                 break;
         }
-        return String.valueOf(df.format(result));
+        return result;
     }
 
-    private String convertCm(double num, String unit){
+    private Double convertCm(double num, String unit){
         Double result = num;
         switch(unit){
             case "in":
@@ -292,10 +296,10 @@ public class MainActivity extends AppCompatActivity {
                 result = num/30.48;
                 break;
         }
-        return String.valueOf(df.format(result));
+        return result;
     }
 
-    private String convertFt(double num, String unit){
+    private Double convertFt(double num, String unit){
         Double result = num;
         switch(unit){
             case "in":
@@ -307,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
             case "cm":
                 result = num*30.48;
         }
-        return String.valueOf(df.format(result));
+        return result;
     }
 
 }
