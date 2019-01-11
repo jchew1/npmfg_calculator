@@ -1,12 +1,15 @@
 package com.example.jonathan.npmfg_calculator;
 
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.View;
 import android.view.Window;
@@ -21,7 +24,6 @@ import java.util.regex.Pattern;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "ABC";
-    private static final int maxNumLength = 10;
     private static final int numButtonsX = 4;
     private static final int numButtonsY = 5;
     private static final float gridHeightPerc = 0.5f;
@@ -38,7 +40,9 @@ public class MainActivity extends AppCompatActivity {
     int unit2Index = 1;
     boolean hasDot = false;
     char hasOperator;
-    DecimalFormat df = new DecimalFormat("#.####E0");
+    private static final float minTextSizeSp = 36.0f;
+    float minTextSizePx;
+    DecimalFormat df = new DecimalFormat("#.####");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,8 +99,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void metricsSetup(){
-        DisplayMetrics displayMetrics= new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         int width = displayMetrics.widthPixels/numButtonsX;
         int height = displayMetrics.heightPixels - getStatusBarHeight();
         int numberHeight = (int)(height*(1-gridHeightPerc)/2);
@@ -115,6 +118,60 @@ public class MainActivity extends AppCompatActivity {
             params.height = buttonHeight;
             v.setLayoutParams(params);
         }
+
+        textSizeSetup();
+    }
+    private void textSizeSetup(){
+        minTextSizePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, minTextSizeSp, getResources().getDisplayMetrics());
+
+        final String testText = "0";
+        Paint paint = new Paint();
+        Rect bounds = new Rect();
+        paint.setTypeface(topNumView.getTypeface());
+        paint.setTextSize(topNumView.getTextSize());
+        paint.getTextBounds(testText, 0, testText.length(), bounds);
+        Log.d(TAG, "initial textHeight: " + bounds.height() + " inital viewHeight: " + topNumView.getLayoutParams().height);
+
+        if(bounds.height() > topNumView.getLayoutParams().height){
+            Log.d(TAG, "textSize greater than view");
+            while(bounds.height() > topNumView.getLayoutParams().height){
+                topNumView.setTextSize(TypedValue.COMPLEX_UNIT_PX, topNumView.getTextSize()-1);
+                paint.setTextSize(topNumView.getTextSize());
+                paint.getTextBounds(testText, 0, testText.length(), bounds);
+                Log.d(TAG, "text height: " + bounds.height() + " view height: " + topNumView.getLayoutParams().height);
+            }
+        }else if(bounds.height() < topNumView.getLayoutParams().height){
+            Log.d(TAG, "textSize smaller than view");
+            while(bounds.height() < topNumView.getLayoutParams().height){
+                topNumView.setTextSize(TypedValue.COMPLEX_UNIT_PX, topNumView.getTextSize()+1);
+                paint.setTextSize(topNumView.getTextSize());
+                paint.getTextBounds(testText, 0, testText.length(), bounds);
+                Log.d(TAG, "text size: " + topNumView.getTextSize() + " text height: " + bounds.height() + " view height: " + topNumView.getLayoutParams().height);
+            }
+        }else{
+            Log.d(TAG, "textSize same as view");
+        }
+        middleNumView.setTextSize(TypedValue.COMPLEX_UNIT_PX, topNumView.getTextSize());
+        Log.d(TAG, "textSizeSetup finished: topNumView: " + topNumView.getTextSize() + " middleNumView: " + middleNumView.getTextSize());
+    }
+
+    private String fitNumber(TextView view, String num){
+        Paint paint = new Paint();
+        Rect bounds = new Rect();
+        paint.setTypeface(view.getTypeface());
+        paint.setTextSize(view.getTextSize());
+        paint.getTextBounds(num, 0, num.length(), bounds);
+        /*
+        if text width > view width
+            shrink text size
+            scientific notation if number too big
+         */
+        Log.d(TAG, "fitNumber view width: " + String.valueOf(view.getWidth()));
+        Log.d(TAG, "fitNumber number width: " + String.valueOf(bounds.width()) + " number height: " + String.valueOf(bounds.height()));
+        Log.d(TAG, "fitNumber minTextSize: " + String.valueOf(minTextSizePx));
+        Log.d(TAG, "fitNumber textSize: " + String.valueOf(view.getTextSize()));
+//        if()
+        return num;
     }
 
     private int getStatusBarHeight(){
@@ -130,11 +187,6 @@ public class MainActivity extends AppCompatActivity {
         String num = ((TextView)view).getText().toString();
         String currentNum = middleNumView.getText().toString();
 
-        int numLength = currentNum.length() - (hasDot ? 1 : 0);
-        if(numLength >= maxNumLength){
-            return;
-        }
-
         if(currentNum.equals("0")){
             middleNumView.setText(num);
         }else{
@@ -148,7 +200,6 @@ public class MainActivity extends AppCompatActivity {
     public void putDot(View view) {
         if(!hasDot){
             String currentNum = topNumView.getText().toString() + ".";
-            if(currentNum.length() - 1 >= maxNumLength) return;
             topNumView.setText(currentNum);
             hasDot = true;
         }
@@ -202,25 +253,27 @@ public class MainActivity extends AppCompatActivity {
     private void convertNum() {
         String unit1 = unit1View.getText().toString();
         String unit2 = unit2View.getText().toString();
-        Double newNum = Double.valueOf(bottomNumView.getText().toString());
-        Double temp = (hasOperator == '\u0000') ? Double.valueOf(middleNumView.getText().toString()) : simplifyNum();
+        Double newNum = Double.parseDouble(bottomNumView.getText().toString());
+        Double temp = (hasOperator == '\u0000') ? Double.parseDouble(middleNumView.getText().toString()) : simplifyNum();
 
         switch(unit1){
             case "in":
-                newNum = convertIn(Double.valueOf(temp), unit2);
+                newNum = convertIn(temp, unit2);
                 break;
             case "mm":
-                newNum = convertMm(Double.valueOf(temp), unit2);
+                newNum = convertMm(temp, unit2);
                 break;
             case "cm":
-                newNum = convertCm(Double.valueOf(temp), unit2);
+                newNum = convertCm(temp, unit2);
                 break;
             case "ft":
-                newNum = convertFt(Double.valueOf(temp), unit2);
+                newNum = convertFt(temp, unit2);
                 break;
         }
+        Log.d(TAG, "convertNum newNum: " + newNum);
         bottomNumView.setText(String.valueOf(newNum));
         Log.d(TAG, "convertNum: " + bottomNumView.getText().toString());
+        fitNumber(bottomNumView, String.valueOf(newNum));
     }
 
     private Double simplifyNum(){
@@ -246,10 +299,7 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
-    private String fitNumber(String num){
 
-        return num;
-    }
 
     private Double convertIn(double num, String unit){
         Double result = num;

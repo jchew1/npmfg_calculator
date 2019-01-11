@@ -18,18 +18,17 @@
             android:orientation="vertical"
             android:layout_weight="4">
             <LinearLayout
+                android:id="@+id/middle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
                 <TextView
                     android:id="@+id/top_num"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:autoSizeTextType="uniform"
-                    app:autoSizeMinTextSize="36sp"
+                    android:layout_height="match_parent"
                     android:textSize="@dimen/num_text_size"
                     android:gravity="right|bottom"
-                    android:background="#ffff00"/>
+                    android:background="#ff0000"/>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -38,36 +37,29 @@
                         android:id="@+id/operator"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
-                        app:autoSizeTextType = "uniform"
-                        app:autoSizeMinTextSize="36sp"
                         android:layout_weight="1"
                         android:gravity="center"
-                        android:background="#0000ff"/>
+                        android:background="#00ff00"/>
                     <TextView
                         android:id="@+id/middle_num"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
-                        app:autoSizeTextType = "uniform"
-                        app:autoSizeMinTextSize="36sp"
                         android:text="@string/zero"
+                        android:textSize="@dimen/num_text_size"
                         android:gravity="right|bottom"
-                        android:maxLines="1"
                         android:layout_weight="9"
-                        android:background="#ff0000"/>
+                        android:background="#0000ff"/>
                 </LinearLayout>
             </LinearLayout>
             <TextView
                 android:id="@+id/bottom_num"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:autoSizeTextType="uniform"
                 app:autoSizeMinTextSize="36sp"
-                android:maxLength="12"
                 android:textSize="@dimen/num_text_size"
                 android:text="0"
                 android:gravity="right|bottom"
-                android:maxLines="1"
-                android:background="#ff00ff"/>
+                android:background="#ffff00"/>
         </LinearLayout>
 
         <LinearLayout
@@ -83,7 +75,7 @@
                 android:layout_weight="1"
                 android:textSize="36sp"
                 android:gravity="bottom|left"
-                android:background="#00ff00"/>
+                android:background="#00ffff"/>
             <TextView
                 android:id="@+id/unit_2"
                 android:layout_width="match_parent"
@@ -91,7 +83,7 @@
                 android:layout_weight="1"
                 android:textSize="36sp"
                 android:gravity="bottom|left"
-                android:background="#00ffff"/>
+                android:background="#ff00ff"/>
         </LinearLayout>
     </LinearLayout>
 
