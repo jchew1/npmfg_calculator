@@ -40,9 +40,6 @@ public class MainActivity extends AppCompatActivity {
     int unit2Index = 1;
     boolean hasDot = false;
     char hasOperator;
-    private static final float minTextSizeSp = 36.0f;
-    float minTextSizePx;
-    DecimalFormat df = new DecimalFormat("#.####");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,14 +72,11 @@ public class MainActivity extends AppCompatActivity {
             unit1Button.setText(units[unit1Index]);
             unit2Button.setText(units[unit2Index]);
         }
-
-        Log.d(TAG, "oncreate");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume");
         metricsSetup();
     }
 
@@ -99,15 +93,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void metricsSetup(){
+        // get metrics of screen
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         int width = displayMetrics.widthPixels/numButtonsX;
         int height = displayMetrics.heightPixels - getStatusBarHeight();
         int numberHeight = (int)(height*(1-gridHeightPerc)/2);
         int buttonHeight = (int)(height*gridHeightPerc/numButtonsY);
 
+        // layout number views according to metrics above
         topNumView.getLayoutParams().height = middleNumView.getLayoutParams().height = operatorView.getLayoutParams().height = numberHeight/2;
         bottomNumView.getLayoutParams().height = numberHeight;
 
+        // layout buttons according to metrics above
         GridLayout grid = findViewById(R.id.buttons);
         Button v;
         for(int i=0; i<grid.getChildCount(); i++){
@@ -118,60 +115,40 @@ public class MainActivity extends AppCompatActivity {
             params.height = buttonHeight;
             v.setLayoutParams(params);
         }
-
-        textSizeSetup();
-    }
-    private void textSizeSetup(){
-        minTextSizePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, minTextSizeSp, getResources().getDisplayMetrics());
-
-        final String testText = "0";
-        Paint paint = new Paint();
-        Rect bounds = new Rect();
-        paint.setTypeface(topNumView.getTypeface());
-        paint.setTextSize(topNumView.getTextSize());
-        paint.getTextBounds(testText, 0, testText.length(), bounds);
-        Log.d(TAG, "initial textHeight: " + bounds.height() + " inital viewHeight: " + topNumView.getLayoutParams().height);
-
-        if(bounds.height() > topNumView.getLayoutParams().height){
-            Log.d(TAG, "textSize greater than view");
-            while(bounds.height() > topNumView.getLayoutParams().height){
-                topNumView.setTextSize(TypedValue.COMPLEX_UNIT_PX, topNumView.getTextSize()-1);
-                paint.setTextSize(topNumView.getTextSize());
-                paint.getTextBounds(testText, 0, testText.length(), bounds);
-                Log.d(TAG, "text height: " + bounds.height() + " view height: " + topNumView.getLayoutParams().height);
-            }
-        }else if(bounds.height() < topNumView.getLayoutParams().height){
-            Log.d(TAG, "textSize smaller than view");
-            while(bounds.height() < topNumView.getLayoutParams().height){
-                topNumView.setTextSize(TypedValue.COMPLEX_UNIT_PX, topNumView.getTextSize()+1);
-                paint.setTextSize(topNumView.getTextSize());
-                paint.getTextBounds(testText, 0, testText.length(), bounds);
-                Log.d(TAG, "text size: " + topNumView.getTextSize() + " text height: " + bounds.height() + " view height: " + topNumView.getLayoutParams().height);
-            }
-        }else{
-            Log.d(TAG, "textSize same as view");
-        }
-        middleNumView.setTextSize(TypedValue.COMPLEX_UNIT_PX, topNumView.getTextSize());
-        Log.d(TAG, "textSizeSetup finished: topNumView: " + topNumView.getTextSize() + " middleNumView: " + middleNumView.getTextSize());
     }
 
-    private String fitNumber(TextView view, String num){
+    private void fitNumber(TextView view, String num){
+        // get bounds of num using font and text size
         Paint paint = new Paint();
         Rect bounds = new Rect();
         paint.setTypeface(view.getTypeface());
         paint.setTextSize(view.getTextSize());
         paint.getTextBounds(num, 0, num.length(), bounds);
-        /*
-        if text width > view width
-            shrink text size
-            scientific notation if number too big
-         */
+
         Log.d(TAG, "fitNumber view width: " + String.valueOf(view.getWidth()));
-        Log.d(TAG, "fitNumber number width: " + String.valueOf(bounds.width()) + " number height: " + String.valueOf(bounds.height()));
-        Log.d(TAG, "fitNumber minTextSize: " + String.valueOf(minTextSizePx));
-        Log.d(TAG, "fitNumber textSize: " + String.valueOf(view.getTextSize()));
-//        if()
-        return num;
+        Log.d(TAG, "fitNumber number width: " + String.valueOf(bounds.width()));
+
+        boolean exp = num.toUpperCase().contains("E");
+        String pattern;
+        DecimalFormat df = new DecimalFormat();
+        if(view.getWidth() < bounds.width()) {
+            if (!num.contains(".")) {
+                exp = true;
+                pattern = new String(new char[num.length()]).replace("\0", "#") + "E00";
+            } else {
+                pattern = "#." + new String(new char[num.substring(num.indexOf('.') + 1).length()]).replace("\0", "#") + (exp ? "E00" : "");
+            }
+            while (view.getWidth() < bounds.width()) {
+                Log.d(TAG, "TEXT DOESNT FIT");
+                pattern = pattern.substring(0, pattern.length() - (exp ? 4 : 1)) + (exp ? "E00" : "");
+                Log.d(TAG, pattern);
+                df.applyPattern(pattern);
+                num = String.valueOf(df.format(Double.valueOf(num)));
+                Log.d(TAG, num);
+                paint.getTextBounds(num, 0, num.length(), bounds);
+            }
+        }
+        view.setText(num);
     }
 
     private int getStatusBarHeight(){
@@ -186,21 +163,17 @@ public class MainActivity extends AppCompatActivity {
     public void putNumber(View view) {
         String num = ((TextView)view).getText().toString();
         String currentNum = middleNumView.getText().toString();
-
-        if(currentNum.equals("0")){
-            middleNumView.setText(num);
-        }else{
-            currentNum += num;
-            middleNumView.setText(currentNum);
-        }
+        currentNum = (currentNum.equals("0") ? num : currentNum + num);
+        middleNumView.setText(currentNum);
         Log.d(TAG, "putNumber: " + currentNum);
+        fitNumber(middleNumView, currentNum);
         convertNum();
     }
 
     public void putDot(View view) {
         if(!hasDot){
-            String currentNum = topNumView.getText().toString() + ".";
-            topNumView.setText(currentNum);
+            String currentNum = middleNumView.getText().toString() + ".";
+            middleNumView.setText(currentNum);
             hasDot = true;
         }
     }
@@ -272,7 +245,6 @@ public class MainActivity extends AppCompatActivity {
         }
         Log.d(TAG, "convertNum newNum: " + newNum);
         bottomNumView.setText(String.valueOf(newNum));
-        Log.d(TAG, "convertNum: " + bottomNumView.getText().toString());
         fitNumber(bottomNumView, String.valueOf(newNum));
     }
 
